@@ -4,9 +4,8 @@ A Next.js demo that integrates [`@juspay-tech/hyper-js`](https://www.npmjs.com/p
 
 ## Demo
 
-<video src="./demo.mov" controls width="600"></video>
+![Demo](./demo.gif)
 
-[Download / open `demo.mov`](./demo.mov) if your viewer can't render it inline.
 
 ## Summary
 
