@@ -47,9 +47,6 @@ declare module "@juspay-tech/react-hyper-js" {
     [key: string]: unknown;
   };
 
-  export function useWidgets(): unknown;
-  export function useHyper(): HyperInstance | null;
-
   export type CustomerSavedPaymentMethodsSession = {
     getCustomerLastUsedPaymentMethodData: () => CustomerLastUsedPaymentMethod | null;
     getCustomerDefaultPaymentMethodData?: () => CustomerLastUsedPaymentMethod | null;
@@ -89,7 +86,16 @@ declare module "@juspay-tech/react-hyper-js" {
     [key: string]: unknown;
   };
 
+  export type WidgetInstance = {
+    updateIntent: (
+      fetcher: () => Promise<{ sdkAuthorization: string }>,
+    ) => Promise<unknown>;
+    [key: string]: unknown;
+  };
+
   export function usePaymentSession(): PaymentSessionInstance | null;
+  export function useWidgets(): WidgetInstance | null;
+  export function useHyper(): HyperInstance | null;
 }
 
 declare module "@juspay-tech/hyper-js" {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   CardCVCElement,
   PaymentElement,
+  useWidgets,
   usePaymentSession,
   type CustomerLastUsedPaymentMethod,
   type CustomerSavedPaymentMethodsSession,
@@ -20,6 +21,7 @@ export type SharedProps = {
 export function HyperContent(props: SharedProps) {
   const { amount, paymentId } = props;
   const paymentSession = usePaymentSession();
+  const widgets = useWidgets();
   const [lastUsed, setLastUsed] = useState<CustomerLastUsedPaymentMethod | null | undefined>(null);
   const [methodsSession, setMethodsSession] =
     useState<CustomerSavedPaymentMethodsSession | null>(null);
@@ -49,9 +51,10 @@ export function HyperContent(props: SharedProps) {
   }, [lastUsed]);
 
   const updateAmount =
-    paymentSession && paymentId
-      ? async () => {
-          await paymentSession.updateIntent(async () => {
+    widgets && paymentId
+      ? 
+      async () => {
+          await widgets.updateIntent(async () => {
             const response = await fetch("/api/update-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -96,6 +99,7 @@ export function HyperContent(props: SharedProps) {
       methodsSession={methodsSession}
       loadingSaved={loadingSaved}
       canSubmit={!!paymentSession}
+      amount={amount}
       updateAmount={updateAmount}
     />
   );

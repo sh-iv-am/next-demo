@@ -35,7 +35,7 @@ export default async function handler(
         capture_method: "automatic",
         confirm: false,
         profile_id: process.env.NEXT_PUBLIC_PROFILE_ID,
-        customer_id: 'hyperswitch_demo_customer_id',
+        customer_id: 'hyperswitch_demo_customer_id4354',
         billing: {
             address: {
                 line1: '1467',

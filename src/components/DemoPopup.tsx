@@ -105,6 +105,7 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
                 rules: isAmountScreen
                   ? {
                       ".Input": { border: "0", boxShadow: "" },
+                      ".Input:focus": { border: "0", boxShadow: "" },
                       ".Error": { display: "none" },
                     }
                   : {},
@@ -118,7 +119,7 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
             {...sharedProps}
             cvcSlot={
               <div className="flex h-full w-full items-end px-3 pb-2 text-sm text-zinc-300">
-                123
+                CVC
               </div>
             }
             paymentSlot={
@@ -130,6 +131,7 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
             methodsSession={null}
             loadingSaved={true}
             canSubmit={false}
+            amount={amount}
             updateAmount={null}
           />
         )}

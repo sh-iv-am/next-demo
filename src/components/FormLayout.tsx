@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import {
   useHyper,
@@ -59,19 +59,12 @@ export function FormLayout({
   const hyper = useHyper();
   const widgets = useWidgets();
   const [message, setMessage] = useState("");
+  const [amountVal, setAmountVal] = useState(amount);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDeposit = async () => {
     setMessage("");
     setIsLoading(true);
-
-    try {
-      if (updateAmount) await updateAmount();
-    } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Failed to update amount");
-      setIsLoading(false);
-      return;
-    }
 
     if (isAmountScreen && (!lastUsed || lastUsed.error)) {
       setIsAmountScreen(false);
@@ -111,6 +104,11 @@ export function FormLayout({
     if (status) setMessage(`Payment status: ${status}`);
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    setAmountVal(amount);
+    updateAmount ? updateAmount() : null;
+  }, [amount])
 
   return (
     <>
@@ -177,9 +175,21 @@ export function FormLayout({
       {isAmountScreen && (
         <>
           <div className="flex flex-col items-center px-6 pt-6 pb-2">
-            <div className="flex items-baseline">
+            <div className="flex items-baseline gap-2">
               <span className="text-2xl font-semibold text-zinc-900">CA$</span>
-              <span className="text-6xl font-semibold text-zinc-900">{amount}</span>
+              <div className="bg-white p-2 rounded-lg">
+                <span
+                  className="text-6xl font-semibold text-zinc-900 focus:outline-none"
+                  contentEditable="true"
+                  onChange={(e) => {
+                    const val = parseInt(e.target.textContent, 10);
+                    setAmountVal(isNaN(val) ? 0 : val);
+                  }}
+                  onBlur={(e) => {
+                    updateAmount ? updateAmount() : null
+                  }}
+                >{amountVal}</span>
+              </div>
             </div>
             <p className="mt-3 text-sm text-zinc-600">Minimum deposit is CA$1</p>
             <button className="mt-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700">
