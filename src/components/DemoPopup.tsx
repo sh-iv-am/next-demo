@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { loadHyper } from "@juspay-tech/hyper-js";
+// import { loadHyper } from "@juspay-tech/hyper-js";
+import { loadHyper } from "../utils/loadHyper";
 import { HyperElements } from "@juspay-tech/react-hyper-js";
 import { FormLayout } from "./FormLayout";
 import { HyperContent, type SharedProps } from "./HyperContent";
@@ -12,12 +13,20 @@ const PUBLISHABLE_KEY =
   process.env.NEXT_PUBLIC_HYPERSWITCH_PUBLISHABLE_KEY ?? "";
 const PROFILE_ID = process.env.NEXT_PUBLIC_PROFILE_ID ?? "";
 
+// const hyperPromise =
+//   typeof window !== "undefined" && PUBLISHABLE_KEY
+//     ? loadHyper(
+//         { publishableKey: PUBLISHABLE_KEY, profileId: PROFILE_ID },
+//       )
+//     : null;
+
 const hyperPromise =
   typeof window !== "undefined" && PUBLISHABLE_KEY
-    ? loadHyper(
-        { publishableKey: PUBLISHABLE_KEY, profileId: PROFILE_ID },
-        { customBackendUrl: "https://beta.hyperswitch.io/api" },
-      )
+    ? loadHyper({
+        clientUrl: PUBLISHABLE_KEY.indexOf("pk_prd") > -1 ? "https://eu.hyperswitch.io/sdk/v1" : "https://beta.hyperswitch.io/v1",
+        publishableKey: PUBLISHABLE_KEY,
+        profileId: PROFILE_ID,
+      })
     : null;
 
 export default function DemoPopup({ onClose }: DemoPopupProps) {
