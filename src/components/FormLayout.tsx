@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import {
-  useHyper,
-  useWidgets,
-  type CustomerLastUsedPaymentMethod,
-  type CustomerSavedPaymentMethodsSession,
-} from "@juspay-tech/react-hyper-js";
+// import {
+  // useHyper,
+  // useWidgets,
+  // type CustomerLastUsedPaymentMethod,
+  // type CustomerSavedPaymentMethodsSession,
+// } from "@juspay-tech/capacitor-react-hyperswitch";
 import {
   BackIcon,
   CardIcon,
@@ -24,16 +24,17 @@ export type FormLayoutProps = {
   onClose: () => void;
   cvcSlot: ReactNode;
   paymentSlot: ReactNode;
-  lastUsed: CustomerLastUsedPaymentMethod | null | undefined;
-  methodsSession: CustomerSavedPaymentMethodsSession | null;
+  lastUsed: any | null | undefined;
+  methodsSession: any | null;
   loadingSaved: boolean;
   canSubmit: boolean;
   updateAmount: (() => Promise<void>) | null;
 };
 
-function formatCardLabel(method: CustomerLastUsedPaymentMethod | null): string {
+function formatCardLabel(method: // CustomerLastUsedPaymentMethod 
+  any | null): string {
   if (!method) return "Add payment method";
-  const card = method.card;
+  const card = method.card as any;
   if (card) {
     const brand = card.scheme ?? card.card_network ?? card.card_brand ?? "Card";
     const last4 = card.last4Digits ?? card.last4 ?? card.last4_digits ?? "••••";
@@ -56,8 +57,8 @@ export function FormLayout({
   canSubmit,
   updateAmount,
 }: FormLayoutProps) {
-  const hyper = useHyper();
-  const widgets = useWidgets();
+  // const hyper = useHyper();
+  // const widgets = useWidgets();
   const [message, setMessage] = useState("");
   const [amountVal, setAmountVal] = useState(amount);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,41 +67,41 @@ export function FormLayout({
     setMessage("");
     setIsLoading(true);
 
-    if (isAmountScreen && (!lastUsed || lastUsed.error)) {
-      setIsAmountScreen(false);
-      setIsLoading(false);
-      return;
-    }
+    // if (isAmountScreen && (!lastUsed || lastUsed.error)) {
+    //   setIsAmountScreen(false);
+    //   setIsLoading(false);
+    //   return;
+    // }
     if (isAmountScreen) {
       if (!methodsSession) return;
-      const { error, status } = await methodsSession.confirmWithLastUsedPaymentMethod({
-        confirmParams: {
-          return_url: window.location.origin,
-        },
-        redirect: "always",
-        id: "card-cvc-element",
-      });
-      if (error) setMessage(error.message ?? "Payment error");
-      if (status) setMessage(`Payment status: ${status}`);
+      // const { error, status } = await methodsSession.confirmWithLastUsedPaymentMethod({
+      //   confirmParams: {
+      //     return_url: window.location.origin,
+      //   },
+      //   redirect: "always",
+      //   id: "card-cvc-element",
+      // });
+      // if (error) setMessage(error.message ?? "Payment error");
+      // if (status) setMessage(`Payment status: ${status}`);
       setIsLoading(false);
       return;
     }
 
-    if (!hyper || !widgets) return;
+    // if (!hyper || !widgets) return;
 
-    const { error, status } = await hyper.confirmPayment({
-      widgets,
-      confirmParams: { return_url: window.location.origin },
-      redirect: "always",
-    });
+    // const { error, status } = await hyper.confirmPayment({
+    //   widgets,
+    //   confirmParams: { return_url: window.location.origin },
+    //   redirect: "always",
+    // });
 
-    if (error) {
-      if (error.type === "card_error" || error.type === "validation_error") {
-        setMessage(error.message ?? "Payment error");
-      } else {
-        setMessage(error.message ?? "An unexpected error occurred.");
-      }
-    }
+    // if (error) {
+    //   if (error.type === "card_error" || error.type === "validation_error") {
+    //     setMessage(error.message ?? "Payment error");
+    //   } else {
+    //     setMessage(error.message ?? "An unexpected error occurred.");
+    //   }
+    // }
     if (status) setMessage(`Payment status: ${status}`);
     setIsLoading(false);
   };

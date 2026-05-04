@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-// import { loadHyper } from "@juspay-tech/hyper-js";
-import { loadHyper } from "../utils/loadHyper";
-import { HyperElements } from "@juspay-tech/react-hyper-js";
+import { Hyperswitch } from "@juspay-tech/capacitor-hyperswitch";
+// import { loadHyper } from "../utils/loadHyper";
+import { HyperElements } from "@juspay-tech/capacitor-react-hyperswitch";
 import { FormLayout } from "./FormLayout";
 import { HyperContent, type SharedProps } from "./HyperContent";
 
@@ -22,8 +22,7 @@ const PROFILE_ID = process.env.NEXT_PUBLIC_PROFILE_ID ?? "";
 
 const hyperPromise =
   typeof window !== "undefined" && PUBLISHABLE_KEY
-    ? loadHyper({
-        clientUrl: PUBLISHABLE_KEY.indexOf("pk_prd") > -1 ? "https://eu.hyperswitch.io/sdk/v1" : "https://beta.hyperswitch.io/v1",
+    ? Hyperswitch.init({
         publishableKey: PUBLISHABLE_KEY,
         profileId: PROFILE_ID,
       })
@@ -50,7 +49,8 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/create-payment", {
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:5252";
+    fetch(`${serverUrl}/create-payment-intent`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount: 500, currency: "CAD" }),
@@ -59,6 +59,7 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
       .then((data) => {
         if (cancelled) return;
         if (data.sdkAuthorization) {
+          hyperPromise?.initPaymentSession({sdkAuthorization: data.sdkAuthorization});
           setSdkAuthorization(data.sdkAuthorization);
           setPaymentId(data.paymentId);
         } else {
@@ -109,16 +110,16 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
             hyper={hyperPromise}
             options={{
               sdkAuthorization,
-              appearance: {
-                theme: "default",
-                rules: isAmountScreen
-                  ? {
-                      ".Input": { border: "0", boxShadow: "" },
-                      ".Input:focus": { border: "0", boxShadow: "" },
-                      ".Error": { display: "none" },
-                    }
-                  : {},
-              },
+              // appearance: {
+              //   theme: "default",
+              //   rules: isAmountScreen
+              //     ? {
+              //         ".Input": { border: "0", boxShadow: "" },
+              //         ".Input:focus": { border: "0", boxShadow: "" },
+              //         ".Error": { display: "none" },
+              //       }
+              //     : {},
+              // },
             }}
           >
             <HyperContent {...sharedProps} />
