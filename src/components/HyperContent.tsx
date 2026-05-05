@@ -1,12 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   CvcWidget,
   PaymentElement,
-  usePaymentSession,
+  useElements,
   type PaymentElementHandle,
-  type LastUsedPaymentMethod,
+  type PaymentMethod,
 } from "@juspay-tech/capacitor-react-hyperswitch";
 import { FormLayout } from "./FormLayout";
+
+const SERVER_URL =
+  typeof window !== "undefined" &&
+  (window as any).Capacitor?.getPlatform() === "android"
+    ? "http://10.0.2.2:5252"
+    : "http://localhost:5252";
 
 export type SharedProps = {
   isAmountScreen: boolean;
@@ -18,17 +24,19 @@ export type SharedProps = {
 };
 
 export function HyperContent(props: SharedProps) {
-  const { amount } = props;
-  const paymentSession = usePaymentSession();
+  const { amount, paymentId } = props;
 
-  // Fetch last used payment method directly via paymentSession
-  const [lastUsed, setLastUsed] = useState<LastUsedPaymentMethod | null>(null);
+  // Use the elements hook for confirmPayment and updateIntent
+  const element = useElements();
+
+  // Fetch last used payment method
+  const [lastUsed, setLastUsed] = useState<PaymentMethod | null>(null);
   const [loadingSaved, setLoadingSaved] = useState(true);
   const hasFetched = useRef(false);
 
   useEffect(() => {
-    if (!paymentSession || hasFetched.current) {
-      if (!paymentSession) setLoadingSaved(false);
+    if (!element.elements || hasFetched.current) {
+      if (!element.elements) setLoadingSaved(false);
       return;
     }
 
@@ -36,16 +44,17 @@ export function HyperContent(props: SharedProps) {
     let cancelled = false;
 
     (async () => {
+      if (!element.elements) return;
       try {
         setLoadingSaved(true);
-        const handler = await paymentSession.getCustomerSavedPaymentMethods();
-        const data = await handler.getCustomerLastUsedPaymentMethodData();
-        console.log('[Example] Last used payment method:', JSON.stringify(data, null, 2));
+        const handler = await element.elements.getCustomerSavedPaymentMethods();
+        const result = await handler.getCustomerLastUsedPaymentMethodData();
+        console.log("[Example] Last used payment method:", JSON.stringify(result, null, 2));
         if (!cancelled) {
-          setLastUsed(data);
+          setLastUsed(result.data);
         }
       } catch (err) {
-        console.error('[Example] Failed to fetch last used payment method:', err);
+        console.error("[Example] Failed to fetch last used payment method:", err);
       } finally {
         if (!cancelled) {
           setLoadingSaved(false);
@@ -56,54 +65,86 @@ export function HyperContent(props: SharedProps) {
     return () => {
       cancelled = true;
     };
-  }, [paymentSession]);
+  }, [element.elements]);
 
+  // PaymentElement ref
   const paymentRef = useRef<PaymentElementHandle>(null);
 
-  // updateIntent is available via paymentSession?.updateIntent()
-  // when the SDK supports dynamic amount updates
-  const updateAmount = null;
+  // Confirm payment using the element hook
+  const handleConfirmPayment = useCallback(async () => {
+    const result = await element.confirmPayment(paymentRef, {
+      confirmParams: { return_url: typeof window !== "undefined" ? window.location.origin : "" },
+    });
+    return result;
+  }, [element]);
+
+  // Update intent when amount changes
+  const prevAmountRef = useRef(amount);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    // Only update if amount actually changed and we have a paymentId
+    if (amount === prevAmountRef.current || !paymentId) {
+      return;
+    }
+
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Debounce the updateIntent call
+    debounceTimerRef.current = setTimeout(async () => {
+      try {
+        console.log("[Example] Updating intent for amount:", amount);
+        await element.updateIntent(async () => {
+          const res = await fetch(`${SERVER_URL}/update-payment`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paymentId,
+              amount: amount * 100, // Convert to cents
+              currency: "CAD",
+            }),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          return data.sdkAuthorization;
+        });
+        prevAmountRef.current = amount;
+        console.log("[Example] Intent updated successfully");
+      } catch (err) {
+        console.error("[Example] Failed to update intent:", err);
+      }
+    }, 500);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [amount, paymentId, element]);
 
   return (
     <FormLayout
       {...props}
       cvcSlot={
         <CvcWidget
-          // id={"card-cvc-element"}
-          // options={{ placeholder: "123" }}
-          onReady={() => console.log('[Example] CvcWidget ready')}
+          onReady={() => console.log("[Example] CvcWidget ready")}
           style={{ minHeight: 50 }}
         />
       }
       paymentSlot={
         <PaymentElement
-          // options={{
-          //   layout: {
-          //     type: "accordion",
-          //     radios: true,
-          //     maxAccordionItems: 2,
-          //     spacedAccordionItems: true,
-          //     savedMethodCustomization: {
-          //       hideCardExpiry: true,
-          //       maxItems: 2,
-          //       groupingBehavior: { displayInSeparateScreen: false },
-          //     },
-          //   },
-          //   wallets: { walletReturnUrl: window.location.origin },
-          //   branding: "never",
-          // }}
           ref={paymentRef}
-          onReady={() => console.log('[Example] PaymentElement ready')}
-          style={{ width: '100%', height: '100%' }}
+          onReady={() => console.log("[Example] PaymentElement ready")}
         />
       }
       lastUsed={lastUsed}
-      // methodsSession={methodsSession}
       methodsSession={null}
       loadingSaved={loadingSaved}
-      canSubmit={!!paymentSession}
-      amount={amount}
-      updateAmount={updateAmount}
+      canSubmit={!!element.elements}
+      onConfirmPayment={handleConfirmPayment}
     />
   );
 }

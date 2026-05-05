@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
-// import {
-  // useHyper,
-  // useWidgets,
-  // type CustomerLastUsedPaymentMethod,
-  // type CustomerSavedPaymentMethodsSession,
-// } from "@juspay-tech/capacitor-react-hyperswitch";
+import type { PaymentResult } from "@juspay-tech/capacitor-react-hyperswitch";
 import {
   BackIcon,
   CardIcon,
@@ -28,7 +23,8 @@ export type FormLayoutProps = {
   methodsSession: any | null;
   loadingSaved: boolean;
   canSubmit: boolean;
-  updateAmount: (() => Promise<void>) | null;
+  /** Callback to confirm payment using element.confirmPayment(ref) */
+  onConfirmPayment?: () => Promise<PaymentResult>;
 };
 
 function formatCardLabel(method: // CustomerLastUsedPaymentMethod 
@@ -55,60 +51,64 @@ export function FormLayout({
   methodsSession,
   loadingSaved,
   canSubmit,
-  updateAmount,
+  onConfirmPayment,
 }: FormLayoutProps) {
-  // const hyper = useHyper();
-  // const widgets = useWidgets();
   const [message, setMessage] = useState("");
   const [amountVal, setAmountVal] = useState(amount);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
 
   const handleDeposit = async () => {
     setMessage("");
-    setIsLoading(true);
 
-    // if (isAmountScreen && (!lastUsed || lastUsed.error)) {
-    //   setIsAmountScreen(false);
-    //   setIsLoading(false);
-    //   return;
-    // }
+    // If on the amount screen with saved methods, use the saved method flow
     if (isAmountScreen) {
-      if (!methodsSession) return;
-      // const { error, status } = await methodsSession.confirmWithLastUsedPaymentMethod({
-      //   confirmParams: {
-      //     return_url: window.location.origin,
-      //   },
-      //   redirect: "always",
-      //   id: "card-cvc-element",
-      // });
-      // if (error) setMessage(error.message ?? "Payment error");
-      // if (status) setMessage(`Payment status: ${status}`);
-      setIsLoading(false);
+      if (methodsSession) {
+        // Saved payment method flow would go here
+        // For now, navigate to payment method selection
+        setIsAmountScreen(false);
+      }
       return;
     }
 
-    // if (!hyper || !widgets) return;
+    // Use the PaymentElement confirmation via the hook
+    if (onConfirmPayment) {
+      setIsConfirming(true);
+      try {
+        const result = await onConfirmPayment();
 
-    // const { error, status } = await hyper.confirmPayment({
-    //   widgets,
-    //   confirmParams: { return_url: window.location.origin },
-    //   redirect: "always",
-    // });
+        if (result.type === "failed") {
+          setMessage(result.message ?? "Payment failed");
+        } else if (result.type === "canceled") {
+          setMessage("Payment was canceled");
+        } else {
+          setMessage(`Payment ${result.type}`);
+        }
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : "Payment error";
+        setMessage(errorMsg);
+      } finally {
+        setIsConfirming(false);
+      }
+    }
+  };
 
-    // if (error) {
-    //   if (error.type === "card_error" || error.type === "validation_error") {
-    //     setMessage(error.message ?? "Payment error");
-    //   } else {
-    //     setMessage(error.message ?? "An unexpected error occurred.");
-    //   }
-    // }
-    if (status) setMessage(`Payment status: ${status}`);
-    setIsLoading(false);
+  // Sync amountVal with amount prop
+  useEffect(() => {
+    setAmountVal(amount);
+  }, [amount]);
+
+  // Handle amount selection
+  const handleAmountSelect = (value: number) => {
+    setAmount(value);
+  };
+
+  // Handle manual amount input blur
+  const handleAmountBlur = () => {
+    setAmount(amountVal);
   };
 
   useEffect(() => {
     setAmountVal(amount);
-    updateAmount ? updateAmount() : null;
   }, [amount])
 
   return (
@@ -168,8 +168,8 @@ export function FormLayout({
       )}
 
       {!isAmountScreen && (
-        <div className="px-6 pt-4 pb-2">
-          <div className="w-full min-h-[380px]">{paymentSlot}</div>
+        <div className="flex-1 px-6 pt-4 pb-2 flex flex-col min-h-[400px]">
+          <div className="w-full flex-1">{paymentSlot}</div>
         </div>
       )}
 
@@ -186,9 +186,7 @@ export function FormLayout({
                     const val = parseInt(e.target.textContent, 10);
                     setAmountVal(isNaN(val) ? 0 : val);
                   }}
-                  onBlur={(e) => {
-                    updateAmount ? updateAmount() : null
-                  }}
+                  onBlur={handleAmountBlur}
                 >{amountVal}</span>
               </div>
             </div>
@@ -204,7 +202,7 @@ export function FormLayout({
               return (
                 <button
                   key={value}
-                  onClick={() => setAmount(value)}
+                  onClick={() => handleAmountSelect(value)}
                   className={
                     selected
                       ? "rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white shadow"
@@ -224,11 +222,11 @@ export function FormLayout({
           <p className="mb-3 text-center text-sm text-red-600">{message}</p>
         )}
         <button
-          disabled={!canSubmit || isLoading}
+          disabled={!canSubmit || isConfirming}
           onClick={handleDeposit}
           className="w-full rounded-full bg-emerald-600 py-4 text-base font-bold text-white shadow-lg transition-colors hover:bg-emerald-700 disabled:opacity-60"
         >
-          {isLoading ? "Processing…" : `Deposit $${amount}`}
+          {isConfirming ? "Processing…" : `Deposit $${amount}`}
         </button>
         {isAmountScreen ? (
           <button
