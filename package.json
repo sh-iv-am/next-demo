@@ -7,14 +7,15 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "server": "node mockServer.cjs"
+    "server": "node mockServer.cjs",
+    "sync" : "npm run build && npx cap sync"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.1",
     "@capacitor/core": "^8.3.1",
     "@capacitor/ios": "^8.3.1",
-    "@juspay-tech/capacitor-hyperswitch": "/Users/shivam.shashank/Documents/exp/capacitor-hyperswitch",
-    "@juspay-tech/capacitor-react-hyperswitch": "/Users/shivam.shashank/Documents/exp/capacitor-react-hyperswitch",
+    "@juspay-tech/capacitor-hyperswitch": "../capacitor-hyperswitch",
+    "@juspay-tech/capacitor-react-hyperswitch": "../capacitor-react-hyperswitch",
     "next": "16.2.4",
     "react": "19.2.4",
     "react-dom": "19.2.4"

@@ -1,13 +1,10 @@
-import { useEffect, useState, useRef } from "react";
-import { type PaymentSessionHandler } from "@juspay-tech/capacitor-hyperswitch";
+import { useEffect, useRef, useState } from "react";
 import {
   CvcWidget,
   PaymentElement,
-  // useWidgets,
   usePaymentSession,
-  // type CustomerLastUsedPaymentMethod,
-  // type CustomerSavedPaymentMethodsSession,
   type PaymentElementHandle,
+  type LastUsedPaymentMethod,
 } from "@juspay-tech/capacitor-react-hyperswitch";
 import { FormLayout } from "./FormLayout";
 
@@ -21,61 +18,51 @@ export type SharedProps = {
 };
 
 export function HyperContent(props: SharedProps) {
-  const { amount, paymentId } = props;
+  const { amount } = props;
   const paymentSession = usePaymentSession();
-  // const widgets = useWidgets();
-  // const [lastUsed, setLastUsed] = useState<CustomerLastUsedPaymentMethod | null | undefined>(null);
-  // const [methodsSession, setMethodsSession] =
-  //   useState<CustomerSavedPaymentMethodsSession | null>(null);
-  const [handler, setHandler] = useState<PaymentSessionHandler | null>(null);
-  const [lastUsed, setLastUsed] = useState<any | null | undefined>(null);
 
+  // Fetch last used payment method directly via paymentSession
+  const [lastUsed, setLastUsed] = useState<LastUsedPaymentMethod | null>(null);
   const [loadingSaved, setLoadingSaved] = useState(true);
-
-  const paymentRef = useRef<PaymentElementHandle>(null);
+  const hasFetched = useRef(false);
 
   useEffect(() => {
-    if (!paymentSession) return;
+    if (!paymentSession || hasFetched.current) {
+      if (!paymentSession) setLoadingSaved(false);
+      return;
+    }
+
+    hasFetched.current = true;
     let cancelled = false;
+
     (async () => {
       try {
-        const session = await paymentSession.getCustomerSavedPaymentMethods();
-        if (cancelled) return;
-        // setMethodsSession(session);
-        setHandler(handler);
-        const data = await session.getCustomerLastUsedPaymentMethodData();
-        setLastUsed(data);
-
-      } catch {
-        setLastUsed(undefined);
+        setLoadingSaved(true);
+        const handler = await paymentSession.getCustomerSavedPaymentMethods();
+        const data = await handler.getCustomerLastUsedPaymentMethodData();
+        console.log('[Example] Last used payment method:', JSON.stringify(data, null, 2));
+        if (!cancelled) {
+          setLastUsed(data);
+        }
+      } catch (err) {
+        console.error('[Example] Failed to fetch last used payment method:', err);
+      } finally {
+        if (!cancelled) {
+          setLoadingSaved(false);
+        }
       }
     })();
+
     return () => {
       cancelled = true;
     };
   }, [paymentSession]);
 
-  // useEffect(() => {
-  //   if (lastUsed != null) setLoadingSaved(false);
-  // }, [lastUsed]);
+  const paymentRef = useRef<PaymentElementHandle>(null);
 
+  // updateIntent is available via paymentSession?.updateIntent()
+  // when the SDK supports dynamic amount updates
   const updateAmount = null;
-    // widgets && paymentId
-    //   ? 
-    //   async () => {
-    //       await widgets.updateIntent(async () => {
-    //         const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:5252";
-    //         const response = await fetch(`${serverUrl}/update-payment`, {
-    //           method: "POST",
-    //           headers: { "Content-Type": "application/json" },
-    //           body: JSON.stringify({ paymentId, amount: amount * 100 }),
-    //         });
-    //         const data = await response.json();
-    //         if (!response.ok) throw new Error(data.error ?? "Update failed");
-    //         return { sdkAuthorization: data.sdkAuthorization };
-    //       });
-    //     }
-    //   : null;
 
   return (
     <FormLayout

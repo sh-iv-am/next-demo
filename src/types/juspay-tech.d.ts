@@ -109,3 +109,21 @@ declare module "@juspay-tech/hyper-js" {
     options?: Record<string, unknown>,
   ): Promise<unknown>;
 }
+
+declare module "@juspay-tech/capacitor-hyperswitch" {
+  export interface HyperswitchConfig {
+    publishableKey: string;
+    profileId?: string;
+    customConfig?: Record<string, unknown>;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export interface HyperswitchSession {
+    elements(options: { sdkAuthorization: string }): Promise<any>;
+    initPaymentSession(options: { sdkAuthorization: string }): Promise<any>;
+  }
+
+  export const Hyperswitch: {
+    init(config: HyperswitchConfig): HyperswitchSession;
+  };
+}

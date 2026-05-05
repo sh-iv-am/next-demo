@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { Hyperswitch } from "@juspay-tech/capacitor-hyperswitch";
-// import { loadHyper } from "../utils/loadHyper";
 import { HyperElements } from "@juspay-tech/capacitor-react-hyperswitch";
 import { FormLayout } from "./FormLayout";
 import { HyperContent, type SharedProps } from "./HyperContent";
@@ -13,14 +12,8 @@ const PUBLISHABLE_KEY =
   process.env.NEXT_PUBLIC_HYPERSWITCH_PUBLISHABLE_KEY ?? "";
 const PROFILE_ID = process.env.NEXT_PUBLIC_PROFILE_ID ?? "";
 
-// const hyperPromise =
-//   typeof window !== "undefined" && PUBLISHABLE_KEY
-//     ? loadHyper(
-//         { publishableKey: PUBLISHABLE_KEY, profileId: PROFILE_ID },
-//       )
-//     : null;
-
-const hyperPromise =
+// Create Hyperswitch session - works directly with HyperElements
+const hyperSession =
   typeof window !== "undefined" && PUBLISHABLE_KEY
     ? Hyperswitch.init({
         publishableKey: PUBLISHABLE_KEY,
@@ -51,15 +44,15 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
     let cancelled = false;
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? "http://localhost:5252";
     fetch(`${serverUrl}/create-payment-intent`, {
-      method: "POST",
+      method: "GET",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: 500, currency: "CAD" }),
+      // body: JSON.stringify({ amount: 500, currency: "CAD" }),
     })
       .then((r) => r.json())
-      .then((data) => {
+      .then(async (data) => {
         if (cancelled) return;
         if (data.sdkAuthorization) {
-          hyperPromise?.initPaymentSession({sdkAuthorization: data.sdkAuthorization});
+          hyperSession?.initPaymentSession({ sdkAuthorization: data.sdkAuthorization });
           setSdkAuthorization(data.sdkAuthorization);
           setPaymentId(data.paymentId);
         } else {
@@ -105,45 +98,19 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
           <p className="px-6 pt-4 text-center text-sm text-red-600">{loadError}</p>
         )}
 
-        {hyperPromise && sdkAuthorization ? (
+        {hyperSession && sdkAuthorization ? (
           <HyperElements
-            hyper={hyperPromise}
+            hyper={hyperSession}
             options={{
               sdkAuthorization,
-              // appearance: {
-              //   theme: "default",
-              //   rules: isAmountScreen
-              //     ? {
-              //         ".Input": { border: "0", boxShadow: "" },
-              //         ".Input:focus": { border: "0", boxShadow: "" },
-              //         ".Error": { display: "none" },
-              //       }
-              //     : {},
-              // },
             }}
           >
             <HyperContent {...sharedProps} />
           </HyperElements>
         ) : (
-          <FormLayout
-            {...sharedProps}
-            cvcSlot={
-              <div className="flex h-full w-full items-end px-3 pb-2 text-sm text-zinc-300">
-                CVC
-              </div>
-            }
-            paymentSlot={
-              <div className="flex h-full items-center justify-center text-sm text-zinc-400">
-                Loading payment methods…
-              </div>
-            }
-            lastUsed={null}
-            methodsSession={null}
-            loadingSaved={true}
-            canSubmit={false}
-            amount={amount}
-            updateAmount={null}
-          />
+          <div className="flex h-full items-center p-20 justify-center text-sm text-zinc-400">
+            Loading payment methods…
+          </div>
         )}
       </div>
     </div>
