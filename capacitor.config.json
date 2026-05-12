@@ -1,0 +1,13 @@
+{
+  "appId": "com.example.app",
+  "appName": "next-demo",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}

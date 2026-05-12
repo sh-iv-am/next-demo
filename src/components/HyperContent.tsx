@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   CardCVCElement,
   PaymentElement,
@@ -6,8 +6,10 @@ import {
   usePaymentSession,
   type CustomerLastUsedPaymentMethod,
   type CustomerSavedPaymentMethodsSession,
-} from "@juspay-tech/react-hyper-js";
+  type PaymentElementHandle,
+} from "@juspay-tech/capacitor-react-hyperswitch";
 import { FormLayout } from "./FormLayout";
+import { Capacitor } from "@capacitor/core";
 
 export type SharedProps = {
   isAmountScreen: boolean;
@@ -22,10 +24,14 @@ export function HyperContent(props: SharedProps) {
   const { amount, paymentId } = props;
   const paymentSession = usePaymentSession();
   const widgets = useWidgets();
-  const [lastUsed, setLastUsed] = useState<CustomerLastUsedPaymentMethod | null | undefined>(null);
+  const [lastUsed, setLastUsed] = useState<
+    CustomerLastUsedPaymentMethod | null | undefined
+  >(null);
   const [methodsSession, setMethodsSession] =
     useState<CustomerSavedPaymentMethodsSession | null>(null);
   const [loadingSaved, setLoadingSaved] = useState(true);
+
+  const paymentRef = useRef<PaymentElementHandle>(null);
 
   useEffect(() => {
     if (!paymentSession) return;
@@ -35,10 +41,13 @@ export function HyperContent(props: SharedProps) {
         const session = await paymentSession.getCustomerSavedPaymentMethods();
         if (cancelled) return;
         setMethodsSession(session);
-        const data = session.getCustomerLastUsedPaymentMethodData();
+        const data = await session.getCustomerLastUsedPaymentMethodData();
+        console.log(data);
         setLastUsed(data);
-      } catch {
+        setLoadingSaved(false);
+      } catch (ex) {
         setLastUsed(undefined);
+        setLoadingSaved(false);
       }
     })();
     return () => {
@@ -46,16 +55,15 @@ export function HyperContent(props: SharedProps) {
     };
   }, [paymentSession]);
 
-  useEffect(() => {
-    if (lastUsed != null) setLoadingSaved(false);
-  }, [lastUsed]);
-
   const updateAmount =
     widgets && paymentId
-      ? 
-      async () => {
+      ? async () => {
           await widgets.updateIntent(async () => {
-            const response = await fetch("/api/update-payment", {
+            const serverUrl =
+              Capacitor.getPlatform() === "android"
+                ? "http://10.0.2.2:5252"
+                : "http://localhost:5252";
+            const response = await fetch(`${serverUrl}/update-payment`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ paymentId, amount: amount * 100 }),
@@ -71,28 +79,82 @@ export function HyperContent(props: SharedProps) {
     <FormLayout
       {...props}
       cvcSlot={
-        <CardCVCElement
-          id={"card-cvc-element"}
-          options={{ placeholder: "123" }}
-        />
+        lastUsed?.payment_method == "card" ? (
+          <CardCVCElement
+            id={"card-cvc-element"}
+            options={{
+              placeholder: "123",
+              appearance: {
+                shapes: {
+                  borderRadius: 0,
+                  borderWidth: 0,
+                  shadow: {
+                    blurRadius: 0,
+                    color: "#ffffff00",
+                    intensity: 0,
+                  },
+                },
+                colors: {
+                  light: {
+                    background: "#ffffff00",
+                    componentBackground: "#ffffff00",
+                  },
+                  dark: {
+                    background: "#ffffff00",
+                    componentBackground: "#ffffff00",
+                  },
+                },
+              },
+            }}
+            onReady={() => console.log("[Example] CvcWidget ready")}
+            style={{ minHeight: 50 }}
+          />
+        ) : null
       }
       paymentSlot={
         <PaymentElement
+          id="payment-element-id"
+          onPaymentResult={(data) => {
+            props.onClose();
+            setTimeout(() => {
+              alert(`Type: ${data?.type}\nMessage: ${data?.message}`);
+            }, 0);
+          }}
           options={{
-            layout: {
-              type: "accordion",
-              radios: true,
-              maxAccordionItems: 2,
-              spacedAccordionItems: true,
-              savedMethodCustomization: {
-                hideCardExpiry: true,
-                maxItems: 2,
-                groupingBehavior: { displayInSeparateScreen: false },
+            appearance: {
+              layout: {
+                type: "accordion",
+                radios: true,
+                maxAccordionItems: 2,
+                spacedAccordionItems: true,
+                savedMethodCustomization: {
+                  groupingBehavior: { displayInSeparateScreen: false },
+                },
+              },
+              shapes: {
+                shadow: {
+                  blurRadius: 0,
+                  color: "#ffffff00",
+                  intensity: 0,
+                },
+              },
+              colors: {
+                light: {
+                  background: "#00000000",
+                  componentBackground: "#00000000",
+                  componentBorder: "#00000050",
+                },
+                dark: {
+                  background: "#00000000",
+                  componentBackground: "#00000000",
+                  componentBorder: "#00000050",
+                },
               },
             },
-            wallets: { walletReturnUrl: window.location.origin },
-            branding: "never",
           }}
+          ref={paymentRef}
+          onReady={() => console.log("[Example] PaymentElement ready")}
+          style={{ width: "100%", height: "100%" }}
         />
       }
       lastUsed={lastUsed}
@@ -101,6 +163,7 @@ export function HyperContent(props: SharedProps) {
       canSubmit={!!paymentSession}
       amount={amount}
       updateAmount={updateAmount}
+      widgets={widgets}
     />
   );
 }

@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-// import { loadHyper } from "@juspay-tech/hyper-js";
-import { loadHyper } from "../utils/loadHyper";
-import { HyperElements } from "@juspay-tech/react-hyper-js";
+import { loadHyper } from "@juspay-tech/capacitor-hyperswitch";
+// import { loadHyper } from "../utils/loadHyper";
+import { HyperElements } from "@juspay-tech/capacitor-react-hyperswitch";
 import { FormLayout } from "./FormLayout";
 import { HyperContent, type SharedProps } from "./HyperContent";
+import { Capacitor } from "@capacitor/core";
 
 type DemoPopupProps = {
   onClose: () => void;
@@ -13,20 +14,9 @@ const PUBLISHABLE_KEY =
   process.env.NEXT_PUBLIC_HYPERSWITCH_PUBLISHABLE_KEY ?? "";
 const PROFILE_ID = process.env.NEXT_PUBLIC_PROFILE_ID ?? "";
 
-// const hyperPromise =
-//   typeof window !== "undefined" && PUBLISHABLE_KEY
-//     ? loadHyper(
-//         { publishableKey: PUBLISHABLE_KEY, profileId: PROFILE_ID },
-//       )
-//     : null;
-
 const hyperPromise =
   typeof window !== "undefined" && PUBLISHABLE_KEY
-    ? loadHyper({
-        clientUrl: PUBLISHABLE_KEY.indexOf("pk_prd") > -1 ? "https://eu.hyperswitch.io/sdk/v1" : "https://beta.hyperswitch.io/v1",
-        publishableKey: PUBLISHABLE_KEY,
-        profileId: PROFILE_ID,
-      })
+    ? loadHyper({ publishableKey: PUBLISHABLE_KEY, profileId: PROFILE_ID })
     : null;
 
 export default function DemoPopup({ onClose }: DemoPopupProps) {
@@ -50,10 +40,14 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/create-payment", {
+    const serverUrl =
+      Capacitor.getPlatform() === "android"
+        ? "http://10.0.2.2:5252"
+        : "http://localhost:5252";
+    fetch(`${serverUrl}/create-payment-intent`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: 500, currency: "CAD" }),
+      body: JSON.stringify({ amount: 500, currency: "USD" }),
     })
       .then((r) => r.json())
       .then((data) => {
@@ -83,11 +77,11 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative flex w-full max-w-md max-h-[90vh] flex-col overflow-y-auto rounded-3xl bg-gradient-to-b from-zinc-100 to-emerald-50 shadow-2xl"
+        className="relative flex w-full max-w-md max-h-[90vh] flex-col flex-end overflow-y-auto rounded-t-3xl bg-gradient-to-b from-zinc-100 to-emerald-50 shadow-2xl"
       >
         {isTransitioning && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 backdrop-blur-sm">
@@ -101,7 +95,9 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
         )}
 
         {loadError && (
-          <p className="px-6 pt-4 text-center text-sm text-red-600">{loadError}</p>
+          <p className="px-6 pt-4 text-center text-sm text-red-600">
+            {loadError}
+          </p>
         )}
 
         {hyperPromise && sdkAuthorization ? (
@@ -109,16 +105,6 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
             hyper={hyperPromise}
             options={{
               sdkAuthorization,
-              appearance: {
-                theme: "default",
-                rules: isAmountScreen
-                  ? {
-                      ".Input": { border: "0", boxShadow: "" },
-                      ".Input:focus": { border: "0", boxShadow: "" },
-                      ".Error": { display: "none" },
-                    }
-                  : {},
-              },
             }}
           >
             <HyperContent {...sharedProps} />
@@ -142,6 +128,7 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
             canSubmit={false}
             amount={amount}
             updateAmount={null}
+            widgets={null}
           />
         )}
       </div>

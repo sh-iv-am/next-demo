@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import {
-  useHyper,
-  useWidgets,
+  // useHyper,
+  // useWidgets,
   type CustomerLastUsedPaymentMethod,
   type CustomerSavedPaymentMethodsSession,
-} from "@juspay-tech/react-hyper-js";
+  type ElementsActions,
+} from "@juspay-tech/capacitor-react-hyperswitch";
 import {
   BackIcon,
   CardIcon,
@@ -29,14 +30,15 @@ export type FormLayoutProps = {
   loadingSaved: boolean;
   canSubmit: boolean;
   updateAmount: (() => Promise<void>) | null;
+  widgets: ElementsActions | null;
 };
 
 function formatCardLabel(method: CustomerLastUsedPaymentMethod | null): string {
   if (!method) return "Add payment method";
   const card = method.card;
   if (card) {
-    const brand = card.scheme ?? card.card_network ?? card.card_brand ?? "Card";
-    const last4 = card.last4Digits ?? card.last4 ?? card.last4_digits ?? "••••";
+    const brand = card.scheme ?? card.card_network ?? "Card";
+    const last4 = card.last4_digits ?? "••••";
     return `${brand} •••• ${last4}`;
   }
   return method.payment_method_type ?? method.payment_method ?? "Saved method";
@@ -55,9 +57,10 @@ export function FormLayout({
   loadingSaved,
   canSubmit,
   updateAmount,
+  widgets,
 }: FormLayoutProps) {
-  const hyper = useHyper();
-  const widgets = useWidgets();
+  // const hyper = useHyper();
+  // const widgets = useWidgets();
   const [message, setMessage] = useState("");
   const [amountVal, setAmountVal] = useState(amount);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,49 +69,47 @@ export function FormLayout({
     setMessage("");
     setIsLoading(true);
 
-    if (isAmountScreen && (!lastUsed || lastUsed.error)) {
+    if (isAmountScreen && (!lastUsed)) {
       setIsAmountScreen(false);
       setIsLoading(false);
       return;
     }
     if (isAmountScreen) {
       if (!methodsSession) return;
-      const { error, status } = await methodsSession.confirmWithLastUsedPaymentMethod({
-        confirmParams: {
-          return_url: window.location.origin,
-        },
-        redirect: "always",
-        id: "card-cvc-element",
-      });
-      if (error) setMessage(error.message ?? "Payment error");
-      if (status) setMessage(`Payment status: ${status}`);
+      const { type, message } =
+        await methodsSession.confirmWithCustomerLastUsedPaymentMethod({
+          id: "card-cvc-element",
+        });
+      if (type == "failed") setMessage(message ?? "Payment error");
+      if (type != "failed") setMessage(`Payment status: ${type}`);
       setIsLoading(false);
       return;
     }
 
-    if (!hyper || !widgets) return;
+    if (/*!hyper ||*/ !widgets) return;
 
-    const { error, status } = await hyper.confirmPayment({
-      widgets,
-      confirmParams: { return_url: window.location.origin },
-      redirect: "always",
-    });
-
-    if (error) {
-      if (error.type === "card_error" || error.type === "validation_error") {
-        setMessage(error.message ?? "Payment error");
-      } else {
-        setMessage(error.message ?? "An unexpected error occurred.");
-      }
-    }
-    if (status) setMessage(`Payment status: ${status}`);
+    const { type, message } =
+      await widgets.confirmPayment("payment-element-id");
     setIsLoading(false);
+    if (
+      message !=
+      "Payment form has validation errors. Please correct them and try again."
+    ) {
+      onClose();
+      setTimeout(() => {
+        alert(`Type: ${type}\nMessage: ${message}`);
+      }, 0);
+    } else {
+      setMessage("Please fill the form");
+    }
   };
 
   useEffect(() => {
-    setAmountVal(amount);
-    updateAmount ? updateAmount() : null;
-  }, [amount])
+    if (amountVal != amount) {
+      setAmountVal(amount);
+      updateAmount ? updateAmount() : null;
+    }
+  }, [amount, amountVal]);
 
   return (
     <>
@@ -143,7 +144,7 @@ export function FormLayout({
         <div className="px-6 pt-4">
           {loadingSaved ? (
             <div className="h-14 animate-pulse rounded-xl bg-black/70" />
-          ) : lastUsed && !lastUsed.error ? (
+          ) : lastUsed ? (
             <div className="flex gap-3">
               <button
                 type="button"
@@ -158,16 +159,18 @@ export function FormLayout({
                 </div>
                 <ChevronDownIcon />
               </button>
-              <div className="w-24 h-14 rounded-xl bg-white shadow-sm flex flex-col-reverse overflow-y-auto">
-                {cvcSlot}
-              </div>
+              {cvcSlot && (
+                <div className="w-24 h-14 rounded-xl bg-white shadow-sm flex dark:bg-black/60">
+                  {cvcSlot}
+                </div>
+              )}
             </div>
           ) : null}
         </div>
       )}
 
       {!isAmountScreen && (
-        <div className="px-6 pt-4 pb-2">
+        <div /* className="px-6 pt-4 pb-2" */>
           <div className="w-full min-h-[380px]">{paymentSlot}</div>
         </div>
       )}
@@ -186,12 +189,16 @@ export function FormLayout({
                     setAmountVal(isNaN(val) ? 0 : val);
                   }}
                   onBlur={(e) => {
-                    updateAmount ? updateAmount() : null
+                    updateAmount ? updateAmount() : null;
                   }}
-                >{amountVal}</span>
+                >
+                  {amountVal}
+                </span>
               </div>
             </div>
-            <p className="mt-3 text-sm text-zinc-600">Minimum deposit is CA$1</p>
+            <p className="mt-3 text-sm text-zinc-600">
+              Minimum deposit is CA$1
+            </p>
             <button className="mt-2 text-sm font-semibold text-emerald-600 hover:text-emerald-700">
               Manage Deposit limits
             </button>

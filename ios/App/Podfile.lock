@@ -1,0 +1,43 @@
+PODS:
+  - Capacitor (8.3.4):
+    - CapacitorCordova
+  - CapacitorCordova (8.3.4)
+  - hyperswitch-ios-hermes (0.79.1)
+  - hyperswitch-sdk-ios/common (0.4.9)
+  - hyperswitch-sdk-ios/core (0.4.9):
+    - hyperswitch-ios-hermes (= 0.79.1)
+    - hyperswitch-sdk-ios/common
+  - hyperswitch-sdk-ios/sentry (0.4.9):
+    - hyperswitch-sdk-ios/core
+  - JuspayTechCapacitorHyperswitch (1.0.5):
+    - Capacitor
+    - hyperswitch-sdk-ios/sentry (= 0.4.9)
+
+DEPENDENCIES:
+  - "Capacitor (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - JuspayTechCapacitorHyperswitch (from `../../../../capacitor-hyperswitch`)
+
+SPEC REPOS:
+  trunk:
+    - hyperswitch-ios-hermes
+    - hyperswitch-sdk-ios
+
+EXTERNAL SOURCES:
+  Capacitor:
+    :path: "../../node_modules/@capacitor/ios"
+  CapacitorCordova:
+    :path: "../../node_modules/@capacitor/ios"
+  JuspayTechCapacitorHyperswitch:
+    :path: "../../../../capacitor-hyperswitch"
+
+SPEC CHECKSUMS:
+  Capacitor: d13cad5fa09155679672808cc4ca9fbc2997e1b4
+  CapacitorCordova: c07921bdcfec6f691bae22274446b4d606ebf6a4
+  hyperswitch-ios-hermes: 326f6c577732ca376355e38803cc80184cd54c7c
+  hyperswitch-sdk-ios: 3ab8154dd2a52d01016a51d8bebeede4d8d6b48b
+  JuspayTechCapacitorHyperswitch: 09919e478f63abac0b292041d56d2b6b8359d8d9
+
+PODFILE CHECKSUM: a89c55f1dee711f30f2d012d1e4fcda758dc71aa
+
+COCOAPODS: 1.16.2
