@@ -29,6 +29,7 @@ export type FormLayoutProps = {
   methodsSession: CustomerSavedPaymentMethodsSession | null;
   loadingSaved: boolean;
   canSubmit: boolean;
+  isCvcComplete: boolean;
   updateAmount: (() => Promise<void>) | null;
   widgets: ElementsActions | null;
 };
@@ -56,6 +57,7 @@ export function FormLayout({
   methodsSession,
   loadingSaved,
   canSubmit,
+  isCvcComplete,
   updateAmount,
   widgets,
 }: FormLayoutProps) {
@@ -230,7 +232,7 @@ export function FormLayout({
           <p className="mb-3 text-center text-sm text-red-600">{message}</p>
         )}
         <button
-          disabled={!canSubmit || isLoading}
+          disabled={!canSubmit || isLoading || (isAmountScreen && !!lastUsed?.payment_method && lastUsed.payment_method === "card" && !isCvcComplete)}
           onClick={handleDeposit}
           className="w-full rounded-full bg-emerald-600 py-4 text-base font-bold text-white shadow-lg transition-colors hover:bg-emerald-700 disabled:opacity-60"
         >

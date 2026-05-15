@@ -126,6 +126,7 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
             methodsSession={null}
             loadingSaved={true}
             canSubmit={false}
+            isCvcComplete={false}
             amount={amount}
             updateAmount={null}
             widgets={null}

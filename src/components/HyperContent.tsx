@@ -30,6 +30,7 @@ export function HyperContent(props: SharedProps) {
   const [methodsSession, setMethodsSession] =
     useState<CustomerSavedPaymentMethodsSession | null>(null);
   const [loadingSaved, setLoadingSaved] = useState(true);
+  const [isCvcComplete, setIsCvcComplete] = useState(false);
 
   const paymentRef = useRef<PaymentElementHandle>(null);
 
@@ -106,6 +107,13 @@ export function HyperContent(props: SharedProps) {
                 },
               },
             }}
+            onChange={(data: unknown) => {
+              console.log("CvcWidget changed", JSON.stringify(data));
+              const cvcStatus = (data as { payload?: { cvcStatus?: { isCvcComplete?: boolean } } } | null)?.payload?.cvcStatus;
+              if (cvcStatus) setIsCvcComplete(!!cvcStatus.isCvcComplete);
+            }}
+          onFocus={() => console.log('[Example] CvcWidget focused')}
+          onBlur={() => console.log('[Example] CvcWidget blurred')}
             onReady={() => console.log("[Example] CvcWidget ready")}
             style={{ minHeight: 50 }}
           />
@@ -161,6 +169,7 @@ export function HyperContent(props: SharedProps) {
       methodsSession={methodsSession}
       loadingSaved={loadingSaved}
       canSubmit={!!paymentSession}
+      isCvcComplete={isCvcComplete}
       amount={amount}
       updateAmount={updateAmount}
       widgets={widgets}
