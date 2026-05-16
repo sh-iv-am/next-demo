@@ -72,6 +72,7 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
     setAmount,
     onClose,
     paymentId,
+    setSdkAuthorization,
   };
 
   return (

@@ -17,6 +17,7 @@ export type SharedProps = {
   amount: number;
   setAmount: (v: number) => void;
   onClose: () => void;
+  setSdkAuthorization: (v: string | null) => void;
   paymentId: string | null;
 };
 
@@ -71,6 +72,7 @@ export function HyperContent(props: SharedProps) {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.error ?? "Update failed");
+            props.setSdkAuthorization(data.sdkAuthorization);
             return { sdkAuthorization: data.sdkAuthorization };
           });
         }
