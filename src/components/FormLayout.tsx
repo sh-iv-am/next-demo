@@ -30,6 +30,7 @@ export type FormLayoutProps = {
   loadingSaved: boolean;
   canSubmit: boolean;
   isCvcComplete: boolean;
+  formStatus: string | null;
   updateAmount: (() => Promise<void>) | null;
   widgets: ElementsActions | null;
 };
@@ -58,6 +59,7 @@ export function FormLayout({
   loadingSaved,
   canSubmit,
   isCvcComplete,
+  formStatus,
   updateAmount,
   widgets,
 }: FormLayoutProps) {
@@ -232,7 +234,7 @@ export function FormLayout({
           <p className="mb-3 text-center text-sm text-red-600">{message}</p>
         )}
         <button
-          disabled={!canSubmit || isLoading || (isAmountScreen && !!lastUsed?.payment_method && lastUsed.payment_method === "card" && !isCvcComplete)}
+          disabled={!canSubmit || isLoading || (isAmountScreen && !!lastUsed?.payment_method && lastUsed.payment_method === "card" && !isCvcComplete) || (!isAmountScreen && formStatus !== "COMPLETE")}
           onClick={handleDeposit}
           className="w-full rounded-full bg-emerald-600 py-4 text-base font-bold text-white shadow-lg transition-colors hover:bg-emerald-700 disabled:opacity-60"
         >
@@ -246,10 +248,21 @@ export function FormLayout({
             Cancel
           </button>
         ) : (
-          <div className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500">
-            <ShieldIcon />
-            Your payment is secure &amp; encrypted
-          </div>
+          <>
+            <div className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-500">
+              <ShieldIcon />
+              Your payment is secure &amp; encrypted
+            </div>
+            {!isAmountScreen && (
+              <p className="mt-2 text-center text-xs text-zinc-400">
+                {formStatus === "COMPLETE"
+                  ? "Form complete — ready to pay"
+                  : formStatus === "FILLING"
+                    ? "Please complete the form"
+                    : "Select a payment method"}
+              </p>
+            )}
+          </>
         )}
       </div>
     </>

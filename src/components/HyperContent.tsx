@@ -7,6 +7,7 @@ import {
   type CustomerLastUsedPaymentMethod,
   type CustomerSavedPaymentMethodsSession,
   type PaymentElementHandle,
+  PaymentEventData,
 } from "@juspay-tech/capacitor-react-hyperswitch";
 import { FormLayout } from "./FormLayout";
 import { Capacitor } from "@capacitor/core";
@@ -31,6 +32,7 @@ export function HyperContent(props: SharedProps) {
     useState<CustomerSavedPaymentMethodsSession | null>(null);
   const [loadingSaved, setLoadingSaved] = useState(true);
   const [isCvcComplete, setIsCvcComplete] = useState(false);
+  const [formStatus, setFormStatus] = useState<string | null>(null);
 
   const paymentRef = useRef<PaymentElementHandle>(null);
 
@@ -107,9 +109,9 @@ export function HyperContent(props: SharedProps) {
                 },
               },
             }}
-            onChange={(data: unknown) => {
+            onChange={(data?: PaymentEventData) => {
               console.log("CvcWidget changed", JSON.stringify(data));
-              const cvcStatus = (data as { payload?: { cvcStatus?: { isCvcComplete?: boolean } } } | null)?.payload?.cvcStatus;
+              const cvcStatus = (data as { payload?: { cvcStatus?: { isCvcComplete?: boolean } } } | null | undefined)?.payload?.cvcStatus;
               if (cvcStatus) setIsCvcComplete(!!cvcStatus.isCvcComplete);
             }}
           onFocus={() => console.log('[Example] CvcWidget focused')}
@@ -128,7 +130,31 @@ export function HyperContent(props: SharedProps) {
               alert(`Type: ${data?.type}\nMessage: ${data?.message}`);
             }, 0);
           }}
+          onChange={(data: any) => {
+            if (!data) return;
+            console.log("[PaymentElement Event]", JSON.stringify(data.type), JSON.stringify(data.payload));
+            switch (data.type) {
+              case "FORM_STATUS":
+                setFormStatus(data.payload?.status ?? null);
+                break;
+              case "PAYMENT_METHOD_STATUS":
+                // console.log("[PaymentMethodStatus]", data.payload);
+                break;
+              case "PAYMENT_METHOD_INFO_CARD":
+                // console.log("[CardInfo]", data.payload);
+                break;
+              case "PAYMENT_METHOD_INFO_BILLING_ADDRESS":
+                // console.log("[BillingAddress]", data.payload);
+                break;
+            }
+          }}
           options={{
+            subscribedEvents: [
+              "FORM_STATUS" as const,
+              "PAYMENT_METHOD_STATUS" as const,
+              "PAYMENT_METHOD_INFO_CARD" as const,
+              "PAYMENT_METHOD_INFO_BILLING_ADDRESS" as const,
+            ],
             appearance: {
               layout: {
                 type: "accordion",
@@ -170,6 +196,7 @@ export function HyperContent(props: SharedProps) {
       loadingSaved={loadingSaved}
       canSubmit={!!paymentSession}
       isCvcComplete={isCvcComplete}
+      formStatus={formStatus}
       amount={amount}
       updateAmount={updateAmount}
       widgets={widgets}
