@@ -113,11 +113,16 @@ export function HyperContent(props: SharedProps) {
             }}
             onChange={(data?: PaymentEventData) => {
               console.log("CvcWidget changed", JSON.stringify(data));
-              const cvcStatus = (data as { payload?: { cvcStatus?: { isCvcComplete?: boolean } } } | null | undefined)?.payload?.cvcStatus;
+              const cvcStatus = (
+                data as
+                  | { payload?: { cvcStatus?: { isCvcComplete?: boolean } } }
+                  | null
+                  | undefined
+              )?.payload?.cvcStatus;
               if (cvcStatus) setIsCvcComplete(!!cvcStatus.isCvcComplete);
             }}
-          onFocus={() => console.log('[Example] CvcWidget focused')}
-          onBlur={() => console.log('[Example] CvcWidget blurred')}
+            onFocus={() => console.log("[Example] CvcWidget focused")}
+            onBlur={() => console.log("[Example] CvcWidget blurred")}
             onReady={() => console.log("[Example] CvcWidget ready")}
             style={{ minHeight: 50 }}
           />
@@ -132,9 +137,19 @@ export function HyperContent(props: SharedProps) {
               alert(`Type: ${data?.type}\nMessage: ${data?.message}`);
             }, 0);
           }}
+          onPaymentConfirmButtonClick={(data) => {
+            if(data.paymentMethodType == "google_pay") {
+              return false
+            }
+            return true;
+          }}
           onChange={(data: any) => {
             if (!data) return;
-            console.log("[PaymentElement Event]", JSON.stringify(data.type), JSON.stringify(data.payload));
+            console.log(
+              "[PaymentElement Event]",
+              JSON.stringify(data.type),
+              JSON.stringify(data.payload),
+            );
             switch (data.type) {
               case "FORM_STATUS":
                 setFormStatus(data.payload?.status ?? null);
