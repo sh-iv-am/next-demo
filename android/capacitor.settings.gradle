@@ -3,4 +3,4 @@ include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/android/capacitor')
 
 include ':juspay-tech-capacitor-hyperswitch'
-project(':juspay-tech-capacitor-hyperswitch').projectDir = new File('../../../capacitor-hyperswitch/android')
+project(':juspay-tech-capacitor-hyperswitch').projectDir = new File('../../capacitor-hyperswitch/android')
