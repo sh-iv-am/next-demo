@@ -111,11 +111,16 @@ export function HyperContent(props: SharedProps) {
             }}
             onChange={(data?: PaymentEventData) => {
               console.log("CvcWidget changed", JSON.stringify(data));
-              const cvcStatus = (data as { payload?: { cvcStatus?: { isCvcComplete?: boolean } } } | null | undefined)?.payload?.cvcStatus;
+              const cvcStatus = (
+                data as
+                  | { payload?: { cvcStatus?: { isCvcComplete?: boolean } } }
+                  | null
+                  | undefined
+              )?.payload?.cvcStatus;
               if (cvcStatus) setIsCvcComplete(!!cvcStatus.isCvcComplete);
             }}
-          onFocus={() => console.log('[Example] CvcWidget focused')}
-          onBlur={() => console.log('[Example] CvcWidget blurred')}
+            onFocus={() => console.log("[Example] CvcWidget focused")}
+            onBlur={() => console.log("[Example] CvcWidget blurred")}
             onReady={() => console.log("[Example] CvcWidget ready")}
             style={{ minHeight: 50 }}
           />
@@ -132,7 +137,11 @@ export function HyperContent(props: SharedProps) {
           }}
           onChange={(data: any) => {
             if (!data) return;
-            console.log("[PaymentElement Event]", JSON.stringify(data.type), JSON.stringify(data.payload));
+            console.log(
+              "[PaymentElement Event]",
+              JSON.stringify(data.type),
+              JSON.stringify(data.payload),
+            );
             switch (data.type) {
               case "FORM_STATUS":
                 setFormStatus(data.payload?.status ?? null);
@@ -155,16 +164,16 @@ export function HyperContent(props: SharedProps) {
               "PAYMENT_METHOD_INFO_CARD" as const,
               "PAYMENT_METHOD_INFO_BILLING_ADDRESS" as const,
             ],
-            appearance: {
-              layout: {
-                type: "accordion",
-                radios: true,
-                maxAccordionItems: 2,
-                spacedAccordionItems: true,
-                savedMethodCustomization: {
-                  groupingBehavior: { displayInSeparateScreen: false },
-                },
+            paymentMethodLayout: {
+              type: "accordion",
+              radios: true,
+              maxAccordionItems: 2,
+              spacedAccordionItems: true,
+              savedMethodCustomization: {
+                groupingBehavior: { displayInSeparateScreen: false },
               },
+            },
+            appearance: {
               shapes: {
                 shadow: {
                   blurRadius: 0,
