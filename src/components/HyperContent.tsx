@@ -62,10 +62,8 @@ export function HyperContent(props: SharedProps) {
     widgets && paymentId
       ? async () => {
           await widgets.updateIntent(async () => {
-            const serverUrl =
-              Capacitor.getPlatform() === "android"
-                ? "http://10.0.2.2:5252"
-                : "http://localhost:5252";
+            const serverUrl = "http://10.100.13.231:5252";
+
             const response = await fetch(`${serverUrl}/update-payment`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -101,10 +99,12 @@ export function HyperContent(props: SharedProps) {
                   light: {
                     background: "#ffffff00",
                     componentBackground: "#ffffff00",
+                    primaryText: "#000000",
                   },
                   dark: {
                     background: "#ffffff00",
                     componentBackground: "#ffffff00",
+                    primaryText: "#000000",
                   },
                 },
               },
@@ -135,6 +135,12 @@ export function HyperContent(props: SharedProps) {
               alert(`Type: ${data?.type}\nMessage: ${data?.message}`);
             }, 0);
           }}
+          // onPaymentConfirmButtonClick={(data) => {
+          //   if (data.paymentMethodType == "GOOGLE_PAY") {
+          //     return false;
+          //   }
+          //   return true;
+          // }}
           onChange={(data: any) => {
             if (!data) return;
             console.log(
@@ -183,14 +189,16 @@ export function HyperContent(props: SharedProps) {
               },
               colors: {
                 light: {
-                  background: "#00000000",
-                  componentBackground: "#00000000",
+                  background: "#ffffff",
+                  componentBackground: "#ffffff",
                   componentBorder: "#00000050",
+                  primaryText: "#000000",
                 },
                 dark: {
-                  background: "#00000000",
-                  componentBackground: "#00000000",
+                  background: "#ffffff",
+                  componentBackground: "#ffffff",
                   componentBorder: "#00000050",
+                  primaryText: "#000000",
                 },
               },
             },
@@ -204,8 +212,8 @@ export function HyperContent(props: SharedProps) {
       methodsSession={methodsSession}
       loadingSaved={loadingSaved}
       canSubmit={!!paymentSession}
-      isCvcComplete={isCvcComplete}
-      formStatus={formStatus}
+      isCvcComplete={true}
+      formStatus={'COMPLETE'}
       amount={amount}
       updateAmount={updateAmount}
       widgets={widgets}

@@ -73,7 +73,7 @@ export function FormLayout({
     setMessage("");
     setIsLoading(true);
 
-    if (isAmountScreen && (!lastUsed)) {
+    if (isAmountScreen && !lastUsed) {
       setIsAmountScreen(false);
       setIsLoading(false);
       return;
@@ -85,7 +85,13 @@ export function FormLayout({
           id: "card-cvc-element",
         });
       if (type == "failed") setMessage(message ?? "Payment error");
-      if (type != "failed") setMessage(`Payment status: ${type}`);
+      if (type != "failed") {
+        setMessage(`Payment status: ${type}`);
+
+        setTimeout(() => {
+          alert(`Type: ${type}\nMessage: ${message}`);
+        }, 0);
+      }
       setIsLoading(false);
       return;
     }
@@ -234,7 +240,15 @@ export function FormLayout({
           <p className="mb-3 text-center text-sm text-red-600">{message}</p>
         )}
         <button
-          disabled={!canSubmit || isLoading || (isAmountScreen && !!lastUsed?.payment_method && lastUsed.payment_method === "card" && !isCvcComplete) || (!isAmountScreen && formStatus !== "COMPLETE")}
+          // disabled={
+          //   !canSubmit ||
+          //   isLoading ||
+          //   (isAmountScreen &&
+          //     !!lastUsed?.payment_method &&
+          //     lastUsed.payment_method === "card" &&
+          //     !isCvcComplete) ||
+          //   (!isAmountScreen && formStatus !== "COMPLETE")
+          // }
           onClick={handleDeposit}
           className="w-full rounded-full bg-emerald-600 py-4 text-base font-bold text-white shadow-lg transition-colors hover:bg-emerald-700 disabled:opacity-60"
         >

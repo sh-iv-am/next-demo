@@ -40,14 +40,11 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
 
   useEffect(() => {
     let cancelled = false;
-    const serverUrl =
-      Capacitor.getPlatform() === "android"
-        ? "http://10.0.2.2:5252"
-        : "http://localhost:5252";
+    const serverUrl = "http://10.100.13.231:5252";
     fetch(`${serverUrl}/create-payment-intent`, {
-      method: "POST",
+      method: "GET",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: 500, currency: "USD" }),
+      // body: JSON.stringify({ amount: 500, currency: "USD" }),
     })
       .then((r) => r.json())
       .then((data) => {
@@ -102,7 +99,7 @@ export default function DemoPopup({ onClose }: DemoPopupProps) {
 
         {hyperPromise && sdkAuthorization ? (
           <HyperElements
-            hyper={hyperPromise}
+            hyper={hyperPromise as any}
             options={{
               sdkAuthorization,
             }}
