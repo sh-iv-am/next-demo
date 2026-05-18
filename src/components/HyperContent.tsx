@@ -119,6 +119,7 @@ export function HyperContent(props: SharedProps) {
                   | null
                   | undefined
               )?.payload?.cvcStatus;
+
               if (cvcStatus) setIsCvcComplete(!!cvcStatus.isCvcComplete);
             }}
             onFocus={() => console.log("[Example] CvcWidget focused")}
