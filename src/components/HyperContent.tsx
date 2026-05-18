@@ -119,7 +119,6 @@ export function HyperContent(props: SharedProps) {
                   | null
                   | undefined
               )?.payload?.cvcStatus;
-
               if (cvcStatus) setIsCvcComplete(!!cvcStatus.isCvcComplete);
             }}
             onFocus={() => console.log("[Example] CvcWidget focused")}
@@ -173,16 +172,16 @@ export function HyperContent(props: SharedProps) {
               "PAYMENT_METHOD_INFO_CARD" as const,
               "PAYMENT_METHOD_INFO_BILLING_ADDRESS" as const,
             ],
-            appearance: {
-              layout: {
-                type: "accordion",
-                radios: true,
-                maxAccordionItems: 2,
-                spacedAccordionItems: true,
-                savedMethodCustomization: {
-                  groupingBehavior: { displayInSeparateScreen: false },
-                },
+            paymentMethodLayout: {
+              type: "accordion",
+              radios: true,
+              maxAccordionItems: 2,
+              spacedAccordionItems: true,
+              savedMethodCustomization: {
+                groupingBehavior: { displayInSeparateScreen: false },
               },
+            },
+            appearance: {
               shapes: {
                 shadow: {
                   blurRadius: 0,
