@@ -171,7 +171,7 @@ export function FormLayout({
 
       {!isAmountScreen && (
         <div /* className="px-6 pt-4 pb-2" */>
-          <div className="w-full min-h-[380px]">{paymentSlot}</div>
+          <div className="w-full min-h-[500px]">{paymentSlot}</div>
         </div>
       )}
 

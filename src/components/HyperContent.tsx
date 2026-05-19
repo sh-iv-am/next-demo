@@ -121,16 +121,16 @@ export function HyperContent(props: SharedProps) {
             }, 0);
           }}
           options={{
-            appearance: {
-              layout: {
-                type: "accordion",
-                radios: true,
-                maxAccordionItems: 2,
-                spacedAccordionItems: true,
-                savedMethodCustomization: {
-                  groupingBehavior: { displayInSeparateScreen: false },
-                },
+            paymentMethodLayout: {
+              type: "accordion",
+              radios: true,
+              maxAccordionItems: 2,
+              spacedAccordionItems: true,
+              savedMethodCustomization: {
+                groupingBehavior: { displayInSeparateScreen: false },
               },
+            },
+            appearance: {
               shapes: {
                 shadow: {
                   blurRadius: 0,

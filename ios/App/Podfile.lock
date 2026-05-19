@@ -2,16 +2,26 @@ PODS:
   - Capacitor (8.3.4):
     - CapacitorCordova
   - CapacitorCordova (8.3.4)
+  - HyperCore (0.1.2)
+  - HyperOTA (0.0.8):
+    - HyperCore (= 0.1.2)
   - hyperswitch-ios-hermes (0.79.1)
-  - hyperswitch-sdk-ios/common (0.4.9)
-  - hyperswitch-sdk-ios/core (0.4.9):
+  - hyperswitch-sdk-ios/airborne (0.5.0):
+    - HyperOTA (= 0.0.8)
+    - hyperswitch-sdk-ios/core
+  - hyperswitch-sdk-ios/common (0.5.0)
+  - hyperswitch-sdk-ios/core (0.5.0):
     - hyperswitch-ios-hermes (= 0.79.1)
     - hyperswitch-sdk-ios/common
-  - hyperswitch-sdk-ios/sentry (0.4.9):
+  - hyperswitch-sdk-ios/paypal (0.5.0):
+    - hyperswitch-sdk-ios/core
+  - hyperswitch-sdk-ios/sentry (0.5.0):
     - hyperswitch-sdk-ios/core
   - JuspayTechCapacitorHyperswitch (1.0.5):
     - Capacitor
-    - hyperswitch-sdk-ios/sentry (= 0.4.9)
+    - hyperswitch-sdk-ios/airborne (= 0.5.0)
+    - hyperswitch-sdk-ios/paypal (= 0.5.0)
+    - hyperswitch-sdk-ios/sentry (= 0.5.0)
 
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
@@ -20,6 +30,8 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - HyperCore
+    - HyperOTA
     - hyperswitch-ios-hermes
     - hyperswitch-sdk-ios
 
@@ -34,9 +46,11 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   Capacitor: d13cad5fa09155679672808cc4ca9fbc2997e1b4
   CapacitorCordova: c07921bdcfec6f691bae22274446b4d606ebf6a4
+  HyperCore: 22946379d44746dc6de385a90e383054e38a0692
+  HyperOTA: b8d473168c4f8b79ce24bd493f216902ab73aaf3
   hyperswitch-ios-hermes: 326f6c577732ca376355e38803cc80184cd54c7c
-  hyperswitch-sdk-ios: 3ab8154dd2a52d01016a51d8bebeede4d8d6b48b
-  JuspayTechCapacitorHyperswitch: 09919e478f63abac0b292041d56d2b6b8359d8d9
+  hyperswitch-sdk-ios: c0c5707065a8676bc7ca5412f018e9db99af4ffd
+  JuspayTechCapacitorHyperswitch: 8024b4699358673262b57651c065cc8607ded556
 
 PODFILE CHECKSUM: a89c55f1dee711f30f2d012d1e4fcda758dc71aa
 
