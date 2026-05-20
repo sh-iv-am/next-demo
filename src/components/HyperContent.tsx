@@ -38,7 +38,7 @@ export function HyperContent(props: SharedProps) {
     let cancelled = false;
     (async () => {
       try {
-        const session = await paymentSession.getCustomerSavedPaymentMethods();
+        const session = await paymentSession.getCustomerSavedPaymentMethods({hiddenPaymentMethods: ["paypal", "google_pay", "apple_pay"]});
         if (cancelled) return;
         setMethodsSession(session);
         const data = await session.getCustomerLastUsedPaymentMethodData();
@@ -90,21 +90,11 @@ export function HyperContent(props: SharedProps) {
                   borderWidth: 0,
                   shadow: {
                     blurRadius: 0,
-                    color: "#ffffff00",
                     intensity: 0,
                   },
                 },
-                colors: {
-                  light: {
-                    background: "#ffffff00",
-                    componentBackground: "#ffffff00",
-                  },
-                  dark: {
-                    background: "#ffffff00",
-                    componentBackground: "#ffffff00",
-                  },
-                },
               },
+              cvcIcon: "hidden"
             }}
             onReady={() => console.log("[Example] CvcWidget ready")}
             style={{ minHeight: 50 }}
@@ -123,33 +113,22 @@ export function HyperContent(props: SharedProps) {
           options={{
             paymentMethodLayout: {
               type: "accordion",
-              radios: true,
-              maxAccordionItems: 2,
+              radios: false,
+              maxAccordionItems:2,
+              defaultCollapsed: true,
               spacedAccordionItems: true,
               savedMethodCustomization: {
+                hideCardExpiry: true,
+                defaultCollapsed: false,
                 groupingBehavior: { displayInSeparateScreen: false },
+                hiddenPaymentMethods: ["paypal", "google_pay", "apple_pay"]
               },
             },
             appearance: {
-              shapes: {
-                shadow: {
-                  blurRadius: 0,
-                  color: "#ffffff00",
-                  intensity: 0,
-                },
-              },
-              colors: {
-                light: {
-                  background: "#00000000",
-                  componentBackground: "#00000000",
-                  componentBorder: "#00000050",
-                },
-                dark: {
-                  background: "#00000000",
-                  componentBackground: "#00000000",
-                  componentBorder: "#00000050",
-                },
-              },
+              theme: "Minimal",
+              primaryButton: {
+                height: 50.
+              }
             },
           }}
           ref={paymentRef}

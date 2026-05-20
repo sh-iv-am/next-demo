@@ -13,8 +13,8 @@
     "@capacitor/android": "^8.3.1",
     "@capacitor/core": "^8.3.1",
     "@capacitor/ios": "^8.3.1",
-    "@juspay-tech/capacitor-hyperswitch": "^1.0.6",
-    "@juspay-tech/capacitor-react-hyperswitch": "^1.0.2",
+    "@juspay-tech/capacitor-hyperswitch": "^1.0.7",
+    "@juspay-tech/capacitor-react-hyperswitch": "^1.0.3",
     "next": "16.2.4",
     "react": "19.2.4",
     "react-dom": "19.2.4"
